@@ -11,7 +11,9 @@ def numero_extenso(numero):
     return numero_formatado
 
 
-def gerar_contrato(nome_cliente, nacionalidade, civil, profissao, cpf_cliente, rg_cliente, endereco_cliente, cep, pedido, descricao_pedido, endereco_obra, valor_pedido, prazo_pedido, parcelas, documento_upload):
+def gerar_contrato(nome_cliente, nacionalidade, civil, profissao, cpf_cliente, rg_cliente,
+                   endereco_cliente, cep, pedido, descricao_pedido, endereco_obra, valor_pedido,
+                   prazo_pedido, parcelas, descricao_parcela, documento_upload):
     # Obtém a data atual
     data_atual = datetime.now()
 
@@ -48,9 +50,9 @@ def gerar_contrato(nome_cliente, nacionalidade, civil, profissao, cpf_cliente, r
     prazo_extenso = num2words(prazo_pedido, lang='pt_BR')
     prazo_pedido = f"{prazo_pedido} ({prazo_extenso})"
 
-    # Geração do texto para parcelas
     parcelas_texto = "\n".join(
-        [f"{i + 1}) R$ {numero_extenso(valor)} ({num2words(valor, lang='pt_BR', to='currency')})" for i, valor in enumerate(parcelas)])
+        [f"{i + 1}) R$ {numero_extenso(valor)} ({num2words(valor, lang='pt_BR', to='currency')}) - {descricao_parcela[i]}"
+         for i, valor in enumerate(parcelas)])
 
     # Lê o documento enviado pelo usuário
     doc = Document(documento_upload)
@@ -129,10 +131,13 @@ prazo_pedido = st.number_input(
 num_parcelas = st.number_input(
     'Número de Parcelas', min_value=1, step=1, format='%d')
 valores_parcelas = []
+descricoes_parcelas = []
 
 for i in range(int(num_parcelas)):
     valor_parcela = st.number_input(
         f'Valor da Parcela {i + 1}', format='%0.2f')
+    descricao_parcela = st.text_input(f'Descrição da Parcela {i + 1}')
+    descricoes_parcelas.append(descricao_parcela)
     valores_parcelas.append(valor_parcela)
 
 # Campo para upload do documento
@@ -149,7 +154,7 @@ if st.button("Gerar Contrato"):
         arquivo_contrato = gerar_contrato(
             nome_cliente, nacionalidade, civil, profissao, cpf_cliente, rg_cliente, endereco_cliente,
             cep, pedido, descricao_pedido, endereco_obra, valor_pedido, prazo_pedido, valores_parcelas,
-            documento_upload)
+            descricoes_parcelas, documento_upload)
 
         # Exibe um botão para baixar o arquivo gerado
         st.download_button(
